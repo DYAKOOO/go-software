@@ -11,6 +11,7 @@ import (
 	// "github.com/ardanlabs/service/foundation/web"
 
 )
+var build = "develop"
 
 // main is the entry point for the running instance.
 func main()  {
@@ -42,7 +43,7 @@ func main()  {
 
 func run(ctx context.Context, log *logger.Logger) error {
 	// GOMAXPROCS
-	log.Info(ctx, "startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+	log.Info(ctx, "startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "build" , build)
 
 
 	shutdown := make(chan os.Signal, 1)
