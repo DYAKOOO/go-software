@@ -12,8 +12,8 @@ import (
 
 )
 
-// Main is the entry point for the running instance.
-func Main()  {
+// main is the entry point for the running instance.
+func main()  {
 	var log *logger.Logger
 
 	events := logger.Events{
@@ -32,7 +32,7 @@ func Main()  {
 
 	ctx := context.Background()
 
-	if err := run(ctx, log, build, routeAdder, nil, nil, false); err != nil {
+	if err := run(ctx, log); err != nil {
 		log.Error(ctx, "startup", "msg", err)
 		return 
 	}

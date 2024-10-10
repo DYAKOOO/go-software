@@ -14,6 +14,7 @@ const (
 	LevelDebug = Level(slog.LevelDebug)
 	LevelInfo  = Level(slog.LevelInfo)
 	LevelWarn  = Level(slog.LevelWarn)
+	LevelError = Level(slog.LevelError)
 )
 
 // =============================================================================
