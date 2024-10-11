@@ -25,7 +25,7 @@ VERSION         := 0.0.1
 SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME)-metrics:$(VERSION)
 
-
+# Version := "0.0.1"
 
 dev-docker:
 	docker pull $(GOLANG)
@@ -38,6 +38,19 @@ dev-docker:
 	docker pull $(TEMPO)
 	docker pull $(LOKI)
 	docker pull $(PROMTAIL)
+
+# ==============================================================================
+# Building containers
+
+all: service
+
+service:
+	docker build \
+		-f zarf/docker/dockerfile.service \
+		-t $(SERVICE_IMAGE) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
 
 
 dev-up:
@@ -52,6 +65,36 @@ dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
 #-------------------------------------------------
+
+dev-load:
+	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
+
+
+dev-apply:
+	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
+
+
+dev-restart:
+	kubectl rollout restart deployment $(APP) --namespace=$(NAMESPACE)
+
+dev-update: all dev-load dev-restart
+
+dev-update-apply: all dev-load dev-apply
+
+
+# ------------------------------------------------------------------------------
+
+dev-logs:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run app/tooling/logfmt/main.go -service=$(SERVICE_NAME)
+
+dev-describe-deployment:
+	kubectl describe deployment --namespace=$(NAMESPACE) $(APP)
+
+dev-describe-sales:
+	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(APP)
+
+# ------------------------------------------------------------------------------
 
 
 dev-status:
